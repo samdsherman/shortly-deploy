@@ -2,8 +2,12 @@ var request = require('supertest');
 var express = require('express');
 var expect = require('chai').expect;
 var app = require('../server-config.js');
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost/shortlyTest', function(err) {
+  !err ? console.log('Connected to monogo database') :
+    console.log('Error connecting to mongo database:', err);
+});
 
-var db = require('../app/config');
 var User = require('../app/models/user');
 var Link = require('../app/models/link');
 
@@ -11,7 +15,7 @@ var Link = require('../app/models/link');
 // NOTE: these tests are designed for mongo!
 /////////////////////////////////////////////////////
 
-xdescribe('', function() {
+describe('', function() {
 
   beforeEach(function(done) {
     // Log out currently signed in user
@@ -170,6 +174,7 @@ xdescribe('', function() {
   }); // 'Privileged Access'
 
   describe('Account Creation:', function() {
+    this.timeout(8000);
 
     it('Signup creates a new user', function(done) {
       request(app)
@@ -206,12 +211,13 @@ xdescribe('', function() {
   }); // 'Account Creation'
 
   describe('Account Login:', function() {
+    this.timeout(8000);
 
     beforeEach(function(done) {
-      new User({
+      User.create({
         'username': 'Phillip',
         'password': 'Phillip'
-      }).save(function() {
+      }).then(function() {
         done();
       });
     });
