@@ -11,6 +11,7 @@
   "scripts": {
     "start": "grunt build && grunt upload",
     "test": "grunt test",
+    "test-debug": "node --debug ./node_modules/.bin/grunt test",
     "lint": "eslint ./"
   },
   "dependencies": {
@@ -25,7 +26,7 @@
     "express": "^4.13.4",
     "express-partials": "^0.2.0",
     "express-session": "^1.13.0",
-    "grunt": "^0.4.4",
+    "grunt": "1.0.1",
     "grunt-contrib-concat": "^1.0.0",
     "grunt-contrib-cssmin": "^1.0.1",
     "grunt-contrib-uglify": "^1.0.1",
@@ -41,6 +42,7 @@
     "sqlite3": "~3.1.1"
   },
   "devDependencies": {
+    "grunt-git": "^1.0.0",
     "supertest": "^1.2.0"
   }
 }
