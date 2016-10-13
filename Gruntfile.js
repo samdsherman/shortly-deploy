@@ -3,6 +3,32 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
+      options: {
+        separator: ';',
+        sourceMap: true,
+        sourceMapStyle: 'link'
+      },
+      lib: {
+        src: [
+          'public/lib/jquery.js',
+          'public/lib/underscore.js',
+          'public/lib/backbone.js',
+          'public/lib/handlebars.js'
+        ],
+        dest: 'public/dist/lib.js',
+      },
+      client: {
+        src: [
+          'public/client/app.js',
+          'public/client/link.js',
+          'public/client/links.js',
+          'public/client/linkView.js',
+          'public/client/linksView.js',
+          'public/client/createLinkView.js',
+          'public/client/router.js'
+        ],
+        dest: 'public/dist/client.js'
+      }
     },
 
     mochaTest: {
@@ -21,12 +47,54 @@ module.exports = function(grunt) {
     },
 
     uglify: {
+      options: {
+        sourceMap: true,
+        sourceMapStyle: 'link'
+      },
+      dist: {
+        files: {
+          'public/dist/client.min.js': [
+            'public/client/app.js',
+            'public/client/link.js',
+            'public/client/links.js',
+            'public/client/linkView.js',
+            'public/client/linksView.js',
+            'public/client/createLinkView.js',
+            'public/client/router.js'
+          ],
+          'public/dist/lib.min.js': [
+            'public/lib/jquery.js',
+            'public/lib/underscore.js',
+            'public/lib/backbone.js',
+            'public/lib/handlebars.js'
+          ]
+        }
+      }
     },
 
     eslint: {
       target: [
-        // Add list of files to lint here
+        'app/**/*.js',
+        'lib/*.js',
+        'public/client/*.js',
+        './server.js',
+        './server-config.js'
       ]
+    },
+
+    gitpush: {
+      live: {
+        options: {
+          remote: 'live',
+          branch: 'master'
+        }
+      },
+      origin: {
+        options: {
+          remote: 'origin',
+          branch: 'master'
+        }
+      }
     },
 
     cssmin: {
@@ -39,7 +107,7 @@ module.exports = function(grunt) {
           'public/lib/**/*.js',
         ],
         tasks: [
-          'concat',
+          'eslint',
           'uglify'
         ]
       },
@@ -51,6 +119,10 @@ module.exports = function(grunt) {
 
     shell: {
       prodServer: {
+        command: 'open http://198.199.92.105:4568/'
+      },
+      devServer: {
+        command: 'open http://localhost:4568'
       }
     },
   });
@@ -62,6 +134,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-eslint');
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-shell');
+  grunt.loadNpmTasks('grunt-git');
   grunt.loadNpmTasks('grunt-nodemon');
 
   grunt.registerTask('server-dev', function (target) {
@@ -76,8 +149,11 @@ module.exports = function(grunt) {
     'mochaTest'
   ]);
 
-  grunt.registerTask('build', [
+  grunt.registerTask('start', [
+    'nodemon'
   ]);
+
+  grunt.registerTask('build', ['eslint', 'test', 'uglify']);
 
   grunt.registerTask('upload', function(n) {
     if (grunt.option('prod')) {
@@ -87,9 +163,15 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask('deploy', [
-    // add your deploy tasks here
-  ]);
-
-
+  grunt.registerTask('deploy', function(n) {
+    grunt.task.run(['build']);
+    if (grunt.option('prod')) {
+      grunt.task.run(['gitpush:live']);
+      grunt.task.run(['shell:prodServer']);
+    } else {
+      grunt.task.run(['shell:devServer']);
+      grunt.task.run('nodemon');
+    }
+  });
+  
 };
